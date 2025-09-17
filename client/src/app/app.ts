@@ -13,6 +13,7 @@ import { Chat } from './services/chat';
 export class App {
   messages: string[] = [];
   newMessage: string = '';
+  loading = false;
 
   constructor(private chatService: Chat) {}
 
@@ -20,11 +21,17 @@ export class App {
     if (this.newMessage.trim()) {
       this.messages.push(this.newMessage.trim());
 
+      this.loading = true;
+
       this.chatService.sendMessage(this.newMessage).subscribe({
         next: (response) => {
           this.messages.push(response.reply);
+          this.loading = false;
         },
-        error: (err) => console.error('Error:', err),
+        error: (err) => {
+          console.error('Error:', err);
+          this.loading = false;
+        }
       });
 
       this.newMessage = '';

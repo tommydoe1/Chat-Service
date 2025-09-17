@@ -186,6 +186,18 @@
       >
         {{ msg }}
       </div>
+
+      <!-- AI typing indicator -->
+      <div
+        *ngIf="loading"
+        class="self-end bg-gray-200 text-gray-700 px-3 py-2 rounded-lg max-w-xs flex items-center gap-1"
+      >
+        <span class="dot w-2 h-2 bg-gray-500 rounded-full animate-bounce"></span>
+        <span class="dot w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.2s]"></span>
+        <span class="dot w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.4s]"></span>
+      </div>
+
+
     </div>
 
     <!-- Input area -->
