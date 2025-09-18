@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Chat } from './services/chat';
@@ -15,7 +15,19 @@ export class App {
   newMessage: string = '';
   loading = false;
 
+  @ViewChild('chatContainer') private chatContainer!: ElementRef;
+
   constructor(private chatService: Chat) {}
+
+  ngAfterViewChecked() {
+    this.scrollToBottom();
+  }
+
+  private scrollToBottom() {
+    try {
+      this.chatContainer.nativeElement.scrollTop = this.chatContainer.nativeElement.scrollHeight;
+    } catch (err) {}
+  }
 
   sendMessage() {
     if (this.newMessage.trim()) {

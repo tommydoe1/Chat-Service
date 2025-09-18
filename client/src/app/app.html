@@ -27,9 +27,6 @@
 
     --pill-accent: var(--bright-blue);
 
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-      Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-      "Segoe UI Symbol";
     box-sizing: border-box;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -37,14 +34,10 @@
 
   h1 {
     font-size: 3.125rem;
-    color: var(--gray-900);
     font-weight: 500;
     line-height: 100%;
     letter-spacing: -0.125rem;
     margin: 0;
-    font-family: "Inter Tight", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-      Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-      "Segoe UI Symbol";
   }
 
   p {
@@ -173,15 +166,18 @@
   }
 </style>
 
-<main class="h-screen flex items-center justify-center bg-gray-100 p-4">
-  <div class="w-full max-w-4xl bg-white rounded-x1 shadow-md p-6 flex flex-col gap-6">
-    <h1 class="text-2xl font-bold text-gray-900 text-center">AI Chat Service</h1>
+<main class="h-screen flex items-center justify-center bg-background p-4 font-body">
+  <div class="w-full max-w-4xl bg-primary rounded-md shadow-md p-6 flex flex-col gap-6">
+    <h1 class="font-title text-2xl font-bold text-secondary text-center">AI Chat Service</h1>
 
     <!-- Chat messages -->
-    <div class="flex flex-col gap-2 h-64 overflow-y-auto p-2 border border-gray-200 rounded-md bg-gray-50">
+    <div
+      #chatContainer
+      class="flex flex-col gap-2 h-[70vh] overflow-y-auto p-2 border border-gray-200 rounded-md bg-background"
+    >
       <div
         *ngFor="let msg of messages; let i = index"
-        [ngClass]="i % 2 === 0 ? 'self-start bg-blue-200 text-blue-900' : 'self-end bg-gray-200 text-gray-900'"
+        [ngClass]="i % 2 === 0 ? 'self-start bg-primary text-background' : 'self-end bg-secondary text-accent'"
         class="px-3 py-2 rounded-lg max-w-xs"
       >
         {{ msg }}
@@ -190,11 +186,11 @@
       <!-- AI typing indicator -->
       <div
         *ngIf="loading"
-        class="self-end bg-gray-200 text-gray-700 px-3 py-2 rounded-lg max-w-xs flex items-center gap-1"
+        class="self-end bg-secondary text-accent px-3 py-2 rounded-lg max-w-xs flex items-center gap-1"
       >
-        <span class="dot w-2 h-2 bg-gray-500 rounded-full animate-bounce"></span>
-        <span class="dot w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.2s]"></span>
-        <span class="dot w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.4s]"></span>
+        <span class="dot w-2 h-2 bg-accent rounded-full animate-bounce"></span>
+        <span class="dot w-2 h-2 bg-accent rounded-full animate-bounce [animation-delay:-0.2s]"></span>
+        <span class="dot w-2 h-2 bg-accent rounded-full animate-bounce [animation-delay:-0.4s]"></span>
       </div>
 
 
@@ -207,11 +203,11 @@
         (keyup.enter)="sendMessage()"
         type="text"
         placeholder="Ask anything..."
-        class="flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+        class="flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 bg-background"
       />
       <button 
         (click)="sendMessage()" 
-        class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+        class="px-4 py-2 bg-secondary text-accent rounded-md hover:bg-blue-600"
       >
         Send
       </button>
