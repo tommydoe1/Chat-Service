@@ -2,6 +2,8 @@ import { Component, signal, ViewChild, ElementRef, AfterViewChecked } from '@ang
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Chat } from './services/chat';
+import { marked } from 'marked';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-root',
@@ -17,7 +19,7 @@ export class App {
 
   @ViewChild('chatContainer') private chatContainer!: ElementRef;
 
-  constructor(private chatService: Chat) {}
+  constructor(private chatService: Chat, private sanitizer: DomSanitizer) {}
 
   ngAfterViewChecked() {
     this.scrollToBottom();
@@ -37,7 +39,9 @@ export class App {
 
       this.chatService.sendMessage(this.newMessage).subscribe({
         next: (response) => {
-          this.messages.push(response.reply);
+          const rawHtml = marked.parse(response.reply) as string;
+          const safeHtml = this.sanitizer.bypassSecurityTrustHtml(rawHtml) as string;
+          this.messages.push(safeHtml);
           this.loading = false;
         },
         error: (err) => {

@@ -180,7 +180,7 @@
         [ngClass]="i % 2 === 0 ? 'self-start bg-primary text-background' : 'self-end bg-secondary text-accent'"
         class="px-3 py-2 rounded-lg max-w-xs"
       >
-        {{ msg }}
+        <div [innerHTML]="msg"></div>
       </div>
 
       <!-- AI typing indicator -->
