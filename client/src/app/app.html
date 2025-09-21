@@ -200,13 +200,15 @@
     <div class="flex gap-2">
       <input
         [(ngModel)]="newMessage"
-        (keyup.enter)="sendMessage()"
+        (keyup.enter)="!loading && sendMessage()"
         type="text"
         placeholder="Ask anything..."
         class="flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 bg-background"
+        [disabled]="loading"
       />
       <button 
         (click)="sendMessage()" 
+        [disabled]="loading"
         class="px-4 py-2 bg-secondary text-accent rounded-md hover:bg-blue-600"
       >
         Send
