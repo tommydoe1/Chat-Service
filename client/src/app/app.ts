@@ -31,6 +31,12 @@ export class App {
     } catch (err) {}
   }
 
+  autoResize(event: Event) {
+    const textarea = event.target as HTMLTextAreaElement;
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px'; 
+  }
+
   sendMessage() {
     if (this.newMessage.trim()) {
       this.messages.push(this.newMessage.trim());

@@ -167,7 +167,7 @@
 </style>
 
 <main class="h-screen flex items-center justify-center bg-background p-4 font-body">
-  <div class="w-full max-w-4xl bg-primary rounded-md shadow-md p-6 flex flex-col gap-6">
+  <div class="w-full max-w-4xl h-[90vh] bg-primary rounded-md shadow-md p-6 flex flex-col gap-6">
     <h1 class="font-title text-2xl font-bold text-secondary text-center">AI Chat Service</h1>
 
     <!-- Chat messages -->
@@ -198,14 +198,15 @@
 
     <!-- Input area -->
     <div class="flex gap-2">
-      <input
+      <textarea
         [(ngModel)]="newMessage"
         (keyup.enter)="!loading && sendMessage()"
-        type="text"
+        rows="1"
         placeholder="Ask anything..."
         class="flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 bg-background"
+        (input)="autoResize($event)"
         [disabled]="loading"
-      />
+      ></textarea>
       <button 
         (click)="sendMessage()" 
         [disabled]="loading"
