@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import OpenAI from "openai";
+import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 
 dotenv.config();
 
@@ -12,6 +13,13 @@ app.use(express.json());
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
   });
+
+const systemPrompt: ChatCompletionMessageParam  = {
+    role: "system",
+    content: "You are a helpful AI assistant. Cut all filler from answers. Always be friendly."
+  };
+  
+let conversationHistory: ChatCompletionMessageParam[] = [];
 
 app.get("/", (req, res) => {
   res.send("Server is running successfully");
@@ -24,13 +32,21 @@ app.post("/chat", async (req, res) => {
       if (!message) {
         return res.status(400).json({ error: "Error: Text box cannot be empty" });
       }
+
+      conversationHistory.push({ role: "user", content: message });
   
       const response = await openai.chat.completions.create({
         model: "gpt-4o-mini",
-        messages: [{ role: "user", content: message }],
+        messages: [
+            systemPrompt,
+            ...conversationHistory,
+            { role: "user", content: message }
+        ],
       });
   
       const reply = response.choices[0]?.message?.content || "No response";
+
+      conversationHistory.push({ role: "assistant", content: reply });
   
       res.json({ reply });
     } catch (err) {

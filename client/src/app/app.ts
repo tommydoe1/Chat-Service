@@ -27,8 +27,13 @@ export class App {
 
   private scrollToBottom() {
     try {
-      this.chatContainer.nativeElement.scrollTop = this.chatContainer.nativeElement.scrollHeight;
-    } catch (err) {}
+      this.chatContainer.nativeElement.scrollTo({
+        top: this.chatContainer.nativeElement.scrollHeight,
+        behavior: 'smooth'
+      });
+    } catch (err) {
+      console.error('Scroll error:', err);
+    }
   }
 
   autoResize(event: Event) {
