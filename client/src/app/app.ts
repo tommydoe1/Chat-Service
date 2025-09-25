@@ -21,10 +21,6 @@ export class App {
 
   constructor(private chatService: Chat, private sanitizer: DomSanitizer) {}
 
-  ngAfterViewChecked() {
-    this.scrollToBottom();
-  }
-
   private scrollToBottom() {
     try {
       this.chatContainer.nativeElement.scrollTo({
@@ -41,11 +37,28 @@ export class App {
     textarea.style.height = 'auto';
     textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px'; 
   }
+  
+  resetTextarea() {
+  const textarea = document.querySelector('textarea');
+  if (textarea) {
+    (textarea as HTMLTextAreaElement).style.height = 'auto';
+  }
+}
+
+  onKeyDown(event: KeyboardEvent) {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    if (!this.loading) {
+      this.sendMessage();
+    }
+  }
+}
 
   sendMessage() {
     if (this.newMessage.trim()) {
       this.messages.push(this.newMessage.trim());
-
+      this.resetTextarea();
+      this.scrollToBottom();
       this.loading = true;
 
       this.chatService.sendMessage(this.newMessage).subscribe({
@@ -53,6 +66,7 @@ export class App {
           const rawHtml = marked.parse(response.reply) as string;
           const safeHtml = this.sanitizer.bypassSecurityTrustHtml(rawHtml) as string;
           this.messages.push(safeHtml);
+          this.scrollToBottom();
           this.loading = false;
         },
         error: (err) => {
