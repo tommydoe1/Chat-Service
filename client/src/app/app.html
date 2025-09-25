@@ -178,7 +178,7 @@
       <div
         *ngFor="let msg of messages; let i = index"
         [ngClass]="i % 2 === 0 ? 'self-start bg-primary text-background' : 'self-end bg-secondary text-accent'"
-        class="px-3 py-2 rounded-lg max-w-xs"
+        class="px-3 py-2 rounded-lg max-w-xs message-content"
       >
         <div [innerHTML]="msg"></div>
       </div>
@@ -199,6 +199,7 @@
     <!-- Input area -->
     <div class="flex gap-2">
       <textarea
+        #chatInput
         [(ngModel)]="newMessage"
         (keydown)="onKeyDown($event)"
         rows="1"

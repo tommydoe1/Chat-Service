@@ -18,15 +18,18 @@ export class App {
   loading = false;
 
   @ViewChild('chatContainer') private chatContainer!: ElementRef;
+  @ViewChild('chatInput') private chatInput!: ElementRef<HTMLTextAreaElement>;
 
   constructor(private chatService: Chat, private sanitizer: DomSanitizer) {}
 
   private scrollToBottom() {
     try {
-      this.chatContainer.nativeElement.scrollTo({
-        top: this.chatContainer.nativeElement.scrollHeight,
-        behavior: 'smooth'
-      });
+      setTimeout(() => {
+        this.chatContainer.nativeElement.scrollTo({
+          top: this.chatContainer.nativeElement.scrollHeight,
+          behavior: 'smooth'
+        });
+      }, 0);
     } catch (err) {
       console.error('Scroll error:', err);
     }
@@ -58,7 +61,7 @@ export class App {
     if (this.newMessage.trim()) {
       this.messages.push(this.newMessage.trim());
       this.resetTextarea();
-      this.scrollToBottom();
+      setTimeout(() => this.scrollToBottom(), 0);
       this.loading = true;
 
       this.chatService.sendMessage(this.newMessage).subscribe({
@@ -66,15 +69,15 @@ export class App {
           const rawHtml = marked.parse(response.reply) as string;
           const safeHtml = this.sanitizer.bypassSecurityTrustHtml(rawHtml) as string;
           this.messages.push(safeHtml);
-          this.scrollToBottom();
           this.loading = false;
+          setTimeout(() => this.scrollToBottom(), 50);
+          setTimeout(() => this.chatInput.nativeElement.focus(), 0);
         },
         error: (err) => {
           console.error('Error:', err);
           this.loading = false;
         }
       });
-
       this.newMessage = '';
     }
   }
