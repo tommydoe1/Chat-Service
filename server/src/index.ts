@@ -3,12 +3,24 @@ import cors from "cors";
 import dotenv from "dotenv";
 import OpenAI from "openai";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
+import rateLimit from "express-rate-limit";
 
 dotenv.config();
 
 const app = express();
-app.use(cors());
 app.use(express.json());
+
+const allowedOrigins = ["http://localhost:4200"];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  }
+}));
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
@@ -20,6 +32,14 @@ const systemPrompt: ChatCompletionMessageParam  = {
   };
   
 let conversationHistory: ChatCompletionMessageParam[] = [];
+
+const limiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 5,
+  message: { error: "Too many requests, please slow down." }
+});
+
+app.use(limiter);
 
 app.get("/", (req, res) => {
   res.send("Server is running successfully");

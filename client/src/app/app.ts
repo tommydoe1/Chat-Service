@@ -75,7 +75,13 @@ export class App {
         },
         error: (err) => {
           console.error('Error:', err);
+          let message = 'Unexpected error, please try again.'
+          if (err.error?.error) {
+            message = `Error: ${err.error.error}`;
+          }
+          this.messages.push(`<span class="text-red-600">${message}</span>`);
           this.loading = false;
+          this.chatInput.nativeElement.focus()
         }
       });
       this.newMessage = '';
