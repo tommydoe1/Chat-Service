@@ -1,5 +1,26 @@
 {
+  "version": 2,
+  "builds": [
+    {
+      "src": "server/src/index.ts",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "client/package.json",
+      "use": "@vercel/static-build",
+      "options": {
+        "outputPath": "client/dist/client/browser"
+      }
+    }
+  ],
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/api/(.*)",
+      "destination": "/server/src/index.ts"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/client/dist/client/browser/index.html"
+    }
   ]
 }
