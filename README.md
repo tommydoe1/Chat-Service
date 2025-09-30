@@ -9,6 +9,9 @@ An AI chat application built using Angular, Typescript, Tailwind CSS, and an Exp
 - Rate limiting
 - CORS restrictions
 
+## Live Demo
+https://chat-service-murex.vercel.app
+
 ## How To Run
 ### Clone repo
 ```bash
