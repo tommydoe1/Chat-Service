@@ -10,7 +10,7 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
-const allowedOrigins = ["http://localhost:4200", "https://chat-service-murex.vercel.app/"];
+const allowedOrigins = ["http://localhost:4200", "https://chat-service-murex.vercel.app"];
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -19,7 +19,10 @@ app.use(cors({
     } else {
       callback(new Error("Not allowed by CORS"));
     }
-  }
+  },
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
 }));
 
 const openai = new OpenAI({
@@ -79,3 +82,5 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+
+export default app;

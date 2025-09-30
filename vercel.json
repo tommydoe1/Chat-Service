@@ -1,0 +1,14 @@
+{
+  "buildCommand": "npm install && npm run build",
+  "outputDirectory": "dist/client/browser",
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ]
+}
