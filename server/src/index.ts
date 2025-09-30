@@ -10,7 +10,7 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
-const allowedOrigins = ["http://localhost:4200"];
+const allowedOrigins = ["http://localhost:4200", "https://chat-service-murex.vercel.app/"];
 
 app.use(cors({
   origin: (origin, callback) => {
