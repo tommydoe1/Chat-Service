@@ -31,7 +31,7 @@ const openai = new OpenAI({
 
 const systemPrompt: ChatCompletionMessageParam  = {
     role: "system",
-    content: "You are a helpful AI assistant. Cut all filler from answers. Always be friendly."
+    content: "You are a helpful AI assistant. Eliminate filler and emojis from answers. Prioritise directive phrasing. Always be friendly."
   };
   
 let conversationHistory: ChatCompletionMessageParam[] = [];
