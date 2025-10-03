@@ -1,6 +1,8 @@
-<aside 
-  class="h-full w-64 bg-background text-accent flex flex-col p-4 transition-transform duration-300"
-  >
+<!-- Sidebar -->
+<aside
+  class="fixed top-14 left-0 h-full w-64 bg-background text-accent flex flex-col p-4 shadow-md transition-transform duration-300 z-40"
+  [ngClass]="{ '-translate-x-full': !isOpen, 'translate-x-0': isOpen }"
+>
   <nav class="flex flex-col gap-2">
     <a href="#" class="hover:bg-secondary px-3 py-2 rounded">Home</a>
     <a href="#" class="hover:bg-secondary px-3 py-2 rounded">How to use</a>
