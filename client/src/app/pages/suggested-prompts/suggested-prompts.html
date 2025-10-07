@@ -1,0 +1,23 @@
+<main class="h-screen flex items-start justify-center bg-background p-4 font-body">
+  <div class="w-full max-w-4xl h-[85vh] bg-primary rounded-md shadow-md p-6 flex flex-col gap-6 overflow-y-auto">
+    <h1 class="text-3xl font-semibold text-secondary mb-4">Suggested Prompts</h1>
+
+    <p class="text-secondary mb-2">
+      Not sure what to ask? Try one of these to get started:
+    </p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <button
+        *ngFor="let prompt of prompts"
+        (click)="usePrompt(prompt)"
+        class="pill text-background hover:opacity-80 transition"
+      >
+        {{ prompt }}
+      </button>
+    </div>
+
+    <p class="text-secondary mt-4">
+      Click a prompt to copy it into the chat input box and start chatting!
+    </p>
+  </div>
+</main>

@@ -1,9 +1,10 @@
-import { Component, ViewChild, ElementRef } from '@angular/core';
+import { Component, ViewChild, ElementRef, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ChatService } from '../services/chat.service';
 import { marked } from 'marked';
 import { DomSanitizer } from '@angular/platform-browser';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-chat',
@@ -12,7 +13,7 @@ import { DomSanitizer } from '@angular/platform-browser';
   templateUrl: './chat.html',
   styleUrl: './chat.css'
 })
-export class ChatComponent {
+export class ChatComponent implements OnInit {
   messages: string[] = [];
   newMessage: string =  '';
   loading = false;
@@ -20,7 +21,20 @@ export class ChatComponent {
   @ViewChild('chatContainer') private chatContainer!: ElementRef;
   @ViewChild('chatInput') private chatInput!: ElementRef<HTMLTextAreaElement>;
 
-  constructor(private chatService: ChatService, private sanitizer: DomSanitizer) {}
+  constructor(
+    private chatService: ChatService,
+    private sanitizer: DomSanitizer,
+    private route: ActivatedRoute
+  ) {}
+
+  ngOnInit() {
+    this.route.queryParams.subscribe(params => {
+      const prompt = params['prompt'];
+      if (prompt) {
+        this.newMessage = prompt;
+      }
+    });
+  }
 
   private scrollToBottom() {
     try {

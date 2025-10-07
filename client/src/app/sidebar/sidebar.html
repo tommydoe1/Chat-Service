@@ -4,8 +4,8 @@
   [ngClass]="{ '-translate-x-full': !isOpen, 'translate-x-0': isOpen }"
 >
   <nav class="flex flex-col gap-2">
-    <a href="#" class="hover:bg-secondary px-3 py-2 rounded">Home</a>
-    <a href="#" class="hover:bg-secondary px-3 py-2 rounded">How to use</a>
-    <a href="#" class="hover:bg-secondary px-3 py-2 rounded">Suggested prompts</a>
+    <a routerLink="/" routerLinkActive="bg-secondary" class="hover:bg-secondary px-3 py-2 rounded">Home</a>
+    <a routerLink="/how-to-use" routerLinkActive="bg-secondary" class="hover:bg-secondary px-3 py-2 rounded">How to use</a>
+    <a routerLink="/suggested-prompts" routerLinkActive="bg-secondary" class="hover:bg-secondary px-3 py-2 rounded">Suggested prompts</a>
   </nav>
 </aside>
