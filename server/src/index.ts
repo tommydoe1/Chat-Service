@@ -1,14 +1,21 @@
+// import dotenv from "dotenv";
+// dotenv.config();
+
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import OpenAI from "openai";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 import rateLimit from "express-rate-limit";
-
-dotenv.config();
+import googleRoutes from "./auth/google.routes.js";
+import localRoutes from "./auth/local.routes.js";
+import { authenticateJWT } from "./middleware/auth.middleware.js";
+import { configureGoogleStrategy } from "./auth/google.strategy.js";
+import passport from "passport";
 
 const app = express();
 app.use(express.json());
+// configureGoogleStrategy();
+// app.use(passport.initialize());
 
 const allowedOrigins = ["http://localhost:4200", "https://chat-service-murex.vercel.app"];
 
@@ -24,6 +31,9 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
 }));
+
+app.use("/api/auth", localRoutes);
+// app.use("/api", googleRoutes);
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
