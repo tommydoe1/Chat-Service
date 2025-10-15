@@ -14,8 +14,8 @@ import passport from "passport";
 
 const app = express();
 app.use(express.json());
-// configureGoogleStrategy();
-// app.use(passport.initialize());
+configureGoogleStrategy();
+app.use(passport.initialize());
 
 const allowedOrigins = ["http://localhost:4200", "https://chat-service-murex.vercel.app"];
 
@@ -33,7 +33,7 @@ app.use(cors({
 }));
 
 app.use("/api/auth", localRoutes);
-// app.use("/api", googleRoutes);
+app.use("/api", googleRoutes);
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
@@ -58,35 +58,35 @@ app.get("/", (req, res) => {
   res.send("Server is running successfully");
 });
 
-app.post("/chat", async (req, res) => {
-    try {
-      const { message } = req.body;
-  
-      if (!message) {
-        return res.status(400).json({ error: "Error: Text box cannot be empty" });
-      }
+app.post("/chat", authenticateJWT, async (req, res) => {
+  try {
+    const { message } = req.body;
 
-      conversationHistory.push({ role: "user", content: message });
-  
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-            systemPrompt,
-            ...conversationHistory,
-            { role: "user", content: message }
-        ],
-      });
-  
-      const reply = response.choices[0]?.message?.content || "No response";
-
-      conversationHistory.push({ role: "assistant", content: reply });
-  
-      res.json({ reply });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: "Unknown error occured" });
+    if (!message) {
+      return res.status(400).json({ error: "Error: Text box cannot be empty" });
     }
-  });
+
+    conversationHistory.push({ role: "user", content: message });
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        systemPrompt,
+        ...conversationHistory,
+        { role: "user", content: message }
+      ],
+    });
+
+    const reply = response.choices[0]?.message?.content || "No response";
+
+    conversationHistory.push({ role: "assistant", content: reply });
+
+    res.json({ reply });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Unknown error occurred" });
+  }
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

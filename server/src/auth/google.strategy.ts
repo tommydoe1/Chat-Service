@@ -1,9 +1,7 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import jwt from "jsonwebtoken";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import getPrisma from "../lib/prisma.js";
 
 export const configureGoogleStrategy = () => {
   passport.use(
@@ -15,6 +13,7 @@ export const configureGoogleStrategy = () => {
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
+          const prisma = getPrisma();
           let user = await prisma.user.findUnique({ where: { googleId: profile.id } });
 
           if (!user) {
@@ -22,7 +21,7 @@ export const configureGoogleStrategy = () => {
               data: {
                 googleId: profile.id,
                 email: profile.emails?.[0]?.value ?? "",
-                name: profile.displayName,
+                username: profile.displayName,
               },
             });
           }
