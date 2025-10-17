@@ -8,6 +8,8 @@ An AI chat application built using Angular, Typescript, Tailwind CSS, and an Exp
 - System prompt customisation
 - Rate limiting
 - CORS restrictions
+- User authentication
+- Conversation history
 
 ## Live Demo
 https://chat-service-murex.vercel.app
@@ -36,6 +38,10 @@ npm install
 Create a .env file in /server containing:
 ```env
 OPENAI_API_KEY=your_api_key_here
+DATABASE_URL=your_database_url
+JWT_SECRET=your_jwt_secret
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
 ```
 
 ### Run locally
