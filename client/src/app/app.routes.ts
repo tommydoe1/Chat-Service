@@ -5,6 +5,7 @@ import { SuggestedPrompts } from './pages/suggested-prompts/suggested-prompts';
 
 export const routes: Routes = [
   { path: '', component: ChatComponent },
+  { path: 'chat/:id', component: ChatComponent },
   { path: 'how-to-use', component: HowToUse },
   { path: 'suggested-prompts', component: SuggestedPrompts },
   { path: '**', redirectTo: '' }

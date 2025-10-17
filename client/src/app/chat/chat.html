@@ -167,6 +167,11 @@
 <main class="h-screen flex items-start justify-center bg-background p-4 font-body">
   <div class="w-full max-w-4xl h-[85vh] bg-primary rounded-md shadow-md p-4 flex flex-col gap-4">
 
+    <!-- Guest Warning -->
+    <div *ngIf="guestWarning" class="bg-orange-100 border border-orange-400 text-orange-700 px-4 py-2 rounded text-sm">
+      {{ guestWarning }}
+    </div>
+
     <!-- Chat messages -->
     <div
       #chatContainer
@@ -174,10 +179,11 @@
     >
       <div
         *ngFor="let msg of messages; let i = index"
-        [ngClass]="i % 2 === 0 ? 'self-start bg-primary text-background' : 'self-end bg-secondary text-accent'"
+        [ngClass]="msg.role === 'user' ? 'self-start bg-primary text-background' : 'self-end bg-secondary text-accent'"
         class="px-3 py-2 rounded-lg max-w-xs message-content"
       >
-        <div [innerHTML]="msg"></div>
+        <div *ngIf="msg.isHtml" [innerHTML]="msg.content"></div>
+        <div *ngIf="!msg.isHtml">{{ msg.content }}</div>
       </div>
 
       <!-- AI typing indicator -->
@@ -215,4 +221,3 @@
     </div>
   </div>
 </main>
-

@@ -1,4 +1,4 @@
-<header class="w-full h-14 bg-primary text-secondary flex items-center justify-between px-4 shadow-md">
+<header class="w-full h-14 bg-primary text-secondary flex items-center justify-between px-4 shadow-md relative z-50">
   <!-- Toggle sidebar button -->
   <button
     (click)="onToggleClick()"
@@ -21,7 +21,7 @@
       <!-- Dropdown menu -->
       <div
         *ngIf="showDropdown"
-        class="absolute right-0 mt-2 w-40 bg-white text-black rounded shadow-lg"
+        class="absolute right-0 mt-2 w-40 bg-white text-black rounded shadow-lg z-[100]"
       >
         <button
           (click)="logout()"

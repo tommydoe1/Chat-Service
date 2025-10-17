@@ -4,8 +4,38 @@
   [ngClass]="{ '-translate-x-full': !isOpen, 'translate-x-0': isOpen }"
 >
   <nav class="flex flex-col gap-2">
-    <a routerLink="/" routerLinkActive="bg-secondary" class="hover:bg-secondary px-3 py-2 rounded">Home</a>
+    <a routerLink="/" routerLinkActive="bg-secondary" [routerLinkActiveOptions]="{exact: true}" class="hover:bg-secondary px-3 py-2 rounded">New Chat</a>
     <a routerLink="/how-to-use" routerLinkActive="bg-secondary" class="hover:bg-secondary px-3 py-2 rounded">How to use</a>
     <a routerLink="/suggested-prompts" routerLinkActive="bg-secondary" class="hover:bg-secondary px-3 py-2 rounded">Suggested prompts</a>
+    
+    <!-- Divider -->
+    <div class="border-t border-accent/30 my-2"></div>
+    
+    <!-- Chat History Section -->
+    <div class="flex flex-col gap-1">
+      <h3 class="text-sm font-semibold text-accent/70 px-3 py-1">Chat History</h3>
+      
+      <ng-container *ngIf="isAuthenticated; else guestMessage">
+        <div *ngIf="conversations.length === 0" class="px-3 py-2 text-sm text-accent/50 italic">
+          No saved chats yet
+        </div>
+        
+        <a 
+          *ngFor="let conv of conversations"
+          [routerLink]="['/chat', conv.id]"
+          routerLinkActive="bg-secondary"
+          class="hover:bg-secondary px-3 py-2 rounded text-sm truncate"
+          [title]="conv.title"
+        >
+          {{ conv.title || 'Untitled Chat' }}
+        </a>
+      </ng-container>
+      
+      <ng-template #guestMessage>
+        <div class="px-3 py-2 text-sm text-accent/50 italic">
+          Log in to save chats
+        </div>
+      </ng-template>
+    </div>
   </nav>
 </aside>
