@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
@@ -11,6 +11,7 @@ import { AuthService } from '../services/auth.service';
   styleUrls: ['./auth-dialog.css']
 })
 export class AuthDialog {
+  @Output() close = new EventEmitter<void>();
   mode: 'login' | 'signup' = 'login';
   email = '';
   username = '';
@@ -23,6 +24,10 @@ export class AuthDialog {
   toggleMode() {
     this.mode = this.mode === 'login' ? 'signup' : 'login';
     this.error = null;
+  }
+
+  closeDialog() {
+    this.close.emit();
   }
 
   async submit() {

@@ -20,6 +20,29 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
+.close-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  font-size: 2rem;
+  color: #e0d7c7;
+  cursor: pointer;
+  padding: 0;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+
+.close-button:hover {
+  color: #e2c9a8;
+}
+
 .dialog h2 {
   margin-top: 0;
   margin-bottom: 1.5rem;

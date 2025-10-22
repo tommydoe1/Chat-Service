@@ -1,5 +1,8 @@
-<div class="overlay" (click)="$event.stopPropagation()">
-  <div class="dialog">
+<div class="overlay" (click)="closeDialog()">
+  <div class="dialog" (click)="$event.stopPropagation()">
+    <button class="close-button" (click)="closeDialog()" aria-label="Close dialog">
+      ×
+    </button>
     <h2>{{ mode === 'login' ? 'Login' : 'Create an Account' }}</h2>
 
     <form (ngSubmit)="submit()" *ngIf="!loading">
