@@ -8,6 +8,7 @@ import { marked } from 'marked';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { Title } from '@angular/platform-browser';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -39,7 +40,8 @@ export class ChatComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private sanitizer: DomSanitizer,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private titleService: Title
   ) {}
 
   ngOnInit() {
@@ -50,6 +52,7 @@ export class ChatComponent implements OnInit, OnDestroy {
       } else {
         this.messages = [];
         this.currentConversationId = undefined;
+        this.titleService.setTitle('New Chat – AI Chat Service');
       }
     });
 
@@ -82,11 +85,13 @@ export class ChatComponent implements OnInit, OnDestroy {
             : msg.content,
           isHtml: msg.role === 'assistant'
         })) || [];
+        this.titleService.setTitle(`${conversation.title || 'Chat'} – AI Chat Service`);
         setTimeout(() => this.scrollToBottom(), 100);
       },
       error: (err) => {
         console.error('Error loading conversation:', err);
         this.router.navigate(['/']);
+        this.titleService.setTitle('AI Chat Service');
       }
     });
   }

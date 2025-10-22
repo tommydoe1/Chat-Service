@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-suggested-prompts',
@@ -22,9 +23,16 @@ export class SuggestedPrompts {
     'Give me meal prep ideas for the week'
   ];
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private titleService: Title
+  ) {}
 
   usePrompt(prompt: string) {
     this.router.navigate(['/chat'], { queryParams: { prompt } });
+  }
+
+  ngOnInit(): void {
+    this.titleService.setTitle('Suggested prompts – AI Chat Service');
   }
 }

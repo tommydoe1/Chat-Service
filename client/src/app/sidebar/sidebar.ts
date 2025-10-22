@@ -24,7 +24,7 @@ export class Sidebar implements OnInit {
 
   constructor(
     private conversationService: ConversationService,
-    private authService: AuthService
+    private authService: AuthService,
   ) {}
 
   ngOnInit() {
