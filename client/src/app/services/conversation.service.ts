@@ -9,6 +9,7 @@ export interface Conversation {
   id: number;
   title: string;
   userId: number;
+  model: string;
   createdAt: Date;
   updatedAt: Date;
   messages?: Message[];

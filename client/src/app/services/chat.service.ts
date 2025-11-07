@@ -22,10 +22,10 @@ export class ChatService {
       : new HttpHeaders();
   }
 
-  sendMessage(message: string, conversationId?: number): Observable<any> {
+  sendMessage(message: string, conversationId?: number, model?: string): Observable<any> {
     return this.http.post(
       `${this.apiUrl}/api/chat`, 
-      { message, conversationId },
+      { message, conversationId, model },
       { headers: this.getHeaders() }
     );
   }

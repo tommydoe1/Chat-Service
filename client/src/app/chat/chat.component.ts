@@ -29,6 +29,11 @@ export class ChatComponent implements OnInit, OnDestroy {
   loading = false;
   guestWarning: string | null = null;
   currentConversationId: number | undefined;
+  currentModel: string = 'gpt-4o-mini';
+  availableModels: { [key: string]: string } = 
+  {'gpt-4o-mini': 'GPT-4o Mini',
+  'llama3': 'Llama 3 (Groq)',
+  'gemini': 'Gemini 1.5 Flash'};
   private routeSubscription?: Subscription;
 
   @ViewChild('chatContainer') private chatContainer!: ElementRef;
@@ -44,13 +49,8 @@ export class ChatComponent implements OnInit, OnDestroy {
     private titleService: Title
   ) {}
 
-  availableModels: Record<string, string> = {
-  'gpt-4o-mini': 'GPT-4o Mini',
-  'llama3': 'Llama 3 (Groq)',
-  'gemini': 'Gemini 1.5 Flash'
-};
-
   ngOnInit() {
+
     this.routeSubscription = this.route.params.subscribe(params => {
       const conversationId = params['id'];
       if (conversationId) {
@@ -59,6 +59,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         this.messages = [];
         this.currentConversationId = undefined;
         this.titleService.setTitle('New Chat – AI Chat Service');
+        this.currentModel = 'gpt-4o-mini';
       }
     });
 
@@ -84,6 +85,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.conversationService.getConversation(conversationId).subscribe({
       next: (conversation) => {
         this.currentConversationId = conversation.id;
+        this.currentModel = (conversation as any).model || 'gpt-4o-mini';
         this.messages = conversation.messages?.map(msg => ({
           role: msg.role as 'user' | 'assistant',
           content: msg.role === 'assistant' 
@@ -151,7 +153,7 @@ export class ChatComponent implements OnInit, OnDestroy {
       this.loading = true;
       this.guestWarning = null;
 
-      this.chatService.sendMessage(messageToSend, this.currentConversationId).subscribe({
+      this.chatService.sendMessage(messageToSend, this.currentConversationId, this.currentModel).subscribe({
         next: (response) => {
           const rawHtml = marked.parse(response.reply) as string;
           const safeHtml = this.sanitizer.bypassSecurityTrustHtml(rawHtml);
@@ -164,6 +166,7 @@ export class ChatComponent implements OnInit, OnDestroy {
           
           if (response.conversationId && !this.currentConversationId) {
             this.currentConversationId = response.conversationId;
+            this.currentModel = response.model || this.currentModel;
             if (!this.isGuest) {
               this.router.navigate(['/chat', response.conversationId], { replaceUrl: true });
             }

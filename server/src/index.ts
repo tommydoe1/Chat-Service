@@ -46,7 +46,12 @@ const systemPrompt: ChatCompletionMessageParam = {
   content: "You are a helpful AI assistant. Eliminate filler and emojis from answers. Prioritise directive phrasing. Always be friendly."
 };
 
-const guestConversations: Map<string, ChatCompletionMessageParam[]> = new Map();
+interface GuestConversation {
+  messages: ChatCompletionMessageParam[];
+  model: string;
+}
+
+const guestConversations: Map<string, GuestConversation> = new Map();
 
 const limiter = rateLimit({
   windowMs: 60 * 1000,
@@ -59,6 +64,12 @@ app.use(limiter);
 app.get("/", (req, res) => {
   res.send("Server is running successfully");
 });
+
+const SUPPORTED_MODELS = {
+  'gpt-4o-mini': 'GPT-4o Mini',
+  'llama3': 'Llama 3',
+  'gemini': 'Gemini 1.5 Flash'
+};
 
 async function generateTitle(firstMessage: string): Promise<string> {
   try {
@@ -84,9 +95,78 @@ async function generateTitle(firstMessage: string): Promise<string> {
   }
 }
 
+async function runGPT(messages: ChatCompletionMessageParam[], modelName: string = 'gpt-4o-mini'): Promise<string> {
+  const response = await openai.chat.completions.create({
+    model: modelName,
+    messages: messages,
+  });
+  return response.choices[0]?.message?.content || "No response from GPT";
+}
+
+async function runLlama3(messages: ChatCompletionMessageParam[]): Promise<string> {
+  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "llama3-8b-8192",
+      messages: messages,
+    }),
+  });
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content ?? "No response from Llama 3";
+}
+
+async function runGemini(messages: ChatCompletionMessageParam[]): Promise<string> {
+  const systemMessage = messages.find(msg => msg.role === 'system');
+  const conversationMessages = messages.filter(msg => msg.role !== 'system');
+  
+  const geminiMessages = conversationMessages.map(msg => ({
+    parts: [{ text: msg.content }],
+    role: msg.role === 'assistant' ? 'model' : 'user'
+  }));
+
+  const requestBody: any = {
+    contents: geminiMessages
+  };
+
+  if (systemMessage) {
+    requestBody.systemInstruction = {
+      parts: [{ text: systemMessage.content }]
+    };
+  }
+
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${process.env.GEMINI_API_KEY}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(requestBody),
+    }
+  );
+  const data = await res.json();
+  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "No response from Gemini";
+}
+
+async function getModelResponse(model: string, messages: ChatCompletionMessageParam[]): Promise<string> {
+  switch (model) {
+    case 'llama3':
+      return await runLlama3(messages);
+    
+    case 'gemini':
+      return await runGemini(messages);
+    
+    case 'gpt-4o-mini':
+    default:
+      return await runGPT(messages, 'gpt-4o-mini');
+  }
+}
+
 app.post("/api/chat", optionalAuth, async (req, res) => {
   try {
-    const { message, conversationId } = req.body;
+    const { message, conversationId, model = "gpt-4o-mini" } = req.body;
     const user = (req as any).user;
     const isGuest = (req as any).isGuest;
 
@@ -94,14 +174,24 @@ app.post("/api/chat", optionalAuth, async (req, res) => {
       return res.status(400).json({ error: "Error: Text box cannot be empty" });
     }
 
+    if (!Object.keys(SUPPORTED_MODELS).includes(model)) {
+      return res.status(400).json({ error: "Invalid model selected" });
+    }
+
     let conversationHistory: ChatCompletionMessageParam[] = [];
     let newConversationId: number | undefined = conversationId;
+    let conversationModel = model;
 
     if (isGuest) {
       if (!guestConversations.has('guest')) {
-        guestConversations.set('guest', []);
+        guestConversations.set('guest', {
+          messages: [],
+          model: model
+        });
       }
-      conversationHistory = guestConversations.get('guest')!;
+      const guestConv = guestConversations.get('guest')!;
+      conversationHistory = guestConv.messages;
+      conversationModel = conversationHistory.length > 0 ? guestConv.model : model;
     } else {
       if (conversationId) {
         const conversation = await prisma.conversation.findFirst({
@@ -125,30 +215,30 @@ app.post("/api/chat", optionalAuth, async (req, res) => {
             role: msg.role as 'user' | 'assistant',
             content: msg.content
           }));
+          conversationModel = conversation.model;
         }
       } else {
         const title = await generateTitle(message);
         const newConversation = await prisma.conversation.create({
           data: {
             userId: user.id,
-            title
+            title,
+            model: model
           }
         });
         newConversationId = newConversation.id;
+        conversationModel = model;
       }
     }
 
     conversationHistory.push({ role: "user", content: message });
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        systemPrompt,
-        ...conversationHistory,
-      ],
-    });
+    const messagesToSend: ChatCompletionMessageParam[] = [
+      systemPrompt,
+      ...conversationHistory,
+    ];
 
-    const reply = response.choices[0]?.message?.content || "No response";
+    const reply = await getModelResponse(conversationModel, messagesToSend);
 
     conversationHistory.push({ role: "assistant", content: reply });
 
@@ -177,6 +267,7 @@ app.post("/api/chat", optionalAuth, async (req, res) => {
     res.json({
       reply,
       conversationId: newConversationId,
+      model: conversationModel,
       isGuest,
       message: isGuest ? "Conversations are not saved for guest users. Log in to save your chats!" : undefined
     });

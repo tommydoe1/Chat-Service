@@ -167,6 +167,27 @@
 <main class="h-screen flex items-start justify-center bg-background p-4 font-body">
   <div class="w-full max-w-4xl h-[85vh] bg-primary rounded-md shadow-md p-4 flex flex-col gap-4">
 
+    <!-- Model Selector & Guest Warning -->
+    <div class="flex flex-col gap-2">
+      <!-- Model Selector (only show for new conversations) -->
+      <div *ngIf="!currentConversationId" class="flex items-center gap-2">
+        <label class="text-secondary font-semibold">Model:</label>
+        <select 
+          [(ngModel)]="currentModel" 
+          class="px-3 py-1 rounded bg-secondary text-accent border border-background focus:outline-none focus:ring-2 focus:ring-background"
+        >
+          <option *ngFor="let model of availableModels | keyvalue" [value]="model.key">
+            {{ model.value }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Current model indicator for existing conversations -->
+      <div *ngIf="currentConversationId" class="text-secondary text-sm">
+        Using: <span class="font-semibold">{{ availableModels[currentModel] || currentModel }}</span>
+      </div>
+    </div>
+
     <!-- Guest Warning -->
     <div *ngIf="guestWarning" class="bg-orange-100 border border-orange-400 text-orange-700 px-4 py-2 rounded text-sm">
       {{ guestWarning }}
