@@ -44,6 +44,12 @@ export class ChatComponent implements OnInit, OnDestroy {
     private titleService: Title
   ) {}
 
+  availableModels: Record<string, string> = {
+  'gpt-4o-mini': 'GPT-4o Mini',
+  'llama3': 'Llama 3 (Groq)',
+  'gemini': 'Gemini 1.5 Flash'
+};
+
   ngOnInit() {
     this.routeSubscription = this.route.params.subscribe(params => {
       const conversationId = params['id'];
