@@ -33,7 +33,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   availableModels: { [key: string]: string } = 
   {'gpt-4o-mini': 'GPT-4o Mini',
   'llama3': 'Llama 3 (Groq)',
-  'gemini': 'Gemini 1.5 Flash'};
+  'gemini': 'Gemini 2.0 Flash'};
   private routeSubscription?: Subscription;
 
   @ViewChild('chatContainer') private chatContainer!: ElementRef;
