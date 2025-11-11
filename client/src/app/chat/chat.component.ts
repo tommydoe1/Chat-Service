@@ -9,6 +9,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Title } from '@angular/platform-browser';
+import hljs from 'highlight.js';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -30,10 +31,24 @@ export class ChatComponent implements OnInit, OnDestroy {
   guestWarning: string | null = null;
   currentConversationId: number | undefined;
   currentModel: string = 'gpt-4o-mini';
-  availableModels: { [key: string]: string } = 
-  {'gpt-4o-mini': 'GPT-4o Mini',
-  'llama3': 'Llama 3 (Groq)',
-  'gemini': 'Gemini 2.0 Flash'};
+  dropdownOpen = false;
+  availableModels: Record<
+  string,
+  { name: string; description: string }
+> = {
+    "gpt-4o-mini": { 
+      name: "GPT-4o Mini", 
+      description: "Balanced and reliable for everyday use. Great at conversation, coding help, writing, and problem-solving." 
+    },
+    "llama3": { 
+      name: "Llama 3.1-8B Instant", 
+      description: "Fastest responses. Best when you want quick answers, brainstorming, coding, or rapid back-and-forth chats." 
+    },
+    "gemini": { 
+      name: "Gemini 2.0 Flash", 
+      description: "Great for structured responses, creative writing, analysis, and generating clear explanations." 
+    }
+  };
   private routeSubscription?: Subscription;
 
   @ViewChild('chatContainer') private chatContainer!: ElementRef;
@@ -75,6 +90,15 @@ export class ChatComponent implements OnInit, OnDestroy {
     if (this.routeSubscription) {
       this.routeSubscription.unsubscribe();
     }
+  }
+
+  toggleDropdown() {
+  this.dropdownOpen = !this.dropdownOpen;
+  }
+
+  selectModel(key: string) {
+    this.currentModel = key;
+    this.dropdownOpen = false;
   }
 
   get isGuest(): boolean {
