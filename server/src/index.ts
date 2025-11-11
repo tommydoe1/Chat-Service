@@ -46,7 +46,12 @@ const systemPrompt: ChatCompletionMessageParam = {
   content: "You are a helpful AI assistant. Eliminate filler and emojis from answers. Prioritise directive phrasing. Always be friendly."
 };
 
-const guestConversations: Map<string, ChatCompletionMessageParam[]> = new Map();
+interface GuestConversation {
+  messages: ChatCompletionMessageParam[];
+  model: string;
+}
+
+const guestConversations: Map<string, GuestConversation> = new Map();
 
 const limiter = rateLimit({
   windowMs: 60 * 1000,
@@ -59,6 +64,12 @@ app.use(limiter);
 app.get("/", (req, res) => {
   res.send("Server is running successfully");
 });
+
+const SUPPORTED_MODELS = {
+  'gpt-4o-mini': 'GPT-4o Mini',
+  'llama3': 'Llama 3',
+  'gemini': 'Gemini 2.0 Flash'
+};
 
 async function generateTitle(firstMessage: string): Promise<string> {
   try {
@@ -84,9 +95,144 @@ async function generateTitle(firstMessage: string): Promise<string> {
   }
 }
 
+async function runGPT(messages: ChatCompletionMessageParam[], modelName: string = 'gpt-4o-mini'): Promise<string> {
+  try {
+    console.log(`Calling OpenAI GPT with model: ${modelName}`);
+    const response = await openai.chat.completions.create({
+      model: modelName,
+      messages: messages,
+    });
+    
+    const content = response.choices[0]?.message?.content;
+    if (!content) {
+      throw new Error('No content in GPT response');
+    }
+    
+    return content;
+  } catch (error) {
+    console.error('GPT API Error:', error);
+    throw new Error(`GPT API failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+async function runLlama3(messages: ChatCompletionMessageParam[]): Promise<string> {
+  try {
+    console.log('Calling Groq Llama3 API');
+    
+    if (!process.env.GROQ_API_KEY) {
+      throw new Error('GROQ_API_KEY is not configured');
+    }
+    
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "llama-3.1-8b-instant",
+        messages: messages,
+      }),
+    });
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Groq API returned ${res.status}: ${errorText}`);
+    }
+    
+    const data = await res.json();
+    const content = data.choices?.[0]?.message?.content;
+    
+    if (!content) {
+      throw new Error('No content in Llama3 response');
+    }
+    
+    return content;
+  } catch (error) {
+    console.error('Llama3 API Error:', error);
+    throw new Error(`Llama3 API failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+async function runGemini(messages: ChatCompletionMessageParam[]): Promise<string> {
+  try {
+    console.log('Calling Google Gemini API');
+    
+    if (!process.env.GEMINI_API_KEY) {
+      throw new Error('GEMINI_API_KEY is not configured');
+    }
+    
+    const systemMessage = messages.find(msg => msg.role === 'system');
+    const conversationMessages = messages.filter(msg => msg.role !== 'system');
+    
+    const geminiMessages = conversationMessages.map(msg => ({
+      parts: [{ text: msg.content }],
+      role: msg.role === 'assistant' ? 'model' : 'user'
+    }));
+
+    const requestBody: any = {
+      contents: geminiMessages
+    };
+
+    if (systemMessage) {
+      requestBody.systemInstruction = {
+        parts: [{ text: systemMessage.content }]
+      };
+    }
+
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody),
+      }
+    );
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Gemini API returned ${res.status}: ${errorText}`);
+    }
+    
+    const data = await res.json();
+    
+    if (data.error) {
+      throw new Error(`Gemini API error: ${data.error.message || JSON.stringify(data.error)}`);
+    }
+    
+    const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    
+    if (!content) {
+      console.error('Unexpected Gemini response structure:', JSON.stringify(data, null, 2));
+      throw new Error('No content in Gemini response');
+    }
+    
+    return content;
+  } catch (error) {
+    console.error('Gemini API Error:', error);
+    throw new Error(`Gemini API failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+async function getModelResponse(model: string, messages: ChatCompletionMessageParam[]): Promise<string> {
+  console.log(`Getting response from model: ${model}`);
+  
+  switch (model) {
+    case 'llama3':
+      return await runLlama3(messages);
+    
+    case 'gemini':
+      return await runGemini(messages);
+    
+    case 'gpt-4o-mini':
+    default:
+      return await runGPT(messages, 'gpt-4o-mini');
+  }
+}
+
 app.post("/api/chat", optionalAuth, async (req, res) => {
   try {
-    const { message, conversationId } = req.body;
+    const { message, conversationId, model = "gpt-4o-mini" } = req.body;
     const user = (req as any).user;
     const isGuest = (req as any).isGuest;
 
@@ -94,14 +240,28 @@ app.post("/api/chat", optionalAuth, async (req, res) => {
       return res.status(400).json({ error: "Error: Text box cannot be empty" });
     }
 
+    if (!Object.keys(SUPPORTED_MODELS).includes(model)) {
+      return res.status(400).json({ error: "Invalid model selected" });
+    }
+
     let conversationHistory: ChatCompletionMessageParam[] = [];
     let newConversationId: number | undefined = conversationId;
+    let conversationModel = model;
 
     if (isGuest) {
       if (!guestConversations.has('guest')) {
-        guestConversations.set('guest', []);
+        guestConversations.set('guest', {
+          messages: [],
+          model: model
+        });
       }
-      conversationHistory = guestConversations.get('guest')!;
+      const guestConv = guestConversations.get('guest')!;
+      conversationHistory = guestConv.messages;
+      if (conversationHistory.length > 0 && !req.body.model) {
+        conversationModel = guestConv.model;
+      } else {
+        guestConv.model = model;
+      }
     } else {
       if (conversationId) {
         const conversation = await prisma.conversation.findFirst({
@@ -125,30 +285,42 @@ app.post("/api/chat", optionalAuth, async (req, res) => {
             role: msg.role as 'user' | 'assistant',
             content: msg.content
           }));
+          conversationModel = conversation.model;
         }
       } else {
         const title = await generateTitle(message);
         const newConversation = await prisma.conversation.create({
           data: {
             userId: user.id,
-            title
+            title,
+            model: model
           }
         });
         newConversationId = newConversation.id;
+        conversationModel = model;
       }
     }
 
     conversationHistory.push({ role: "user", content: message });
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        systemPrompt,
-        ...conversationHistory,
-      ],
-    });
+    const messagesToSend: ChatCompletionMessageParam[] = [
+      systemPrompt,
+      ...conversationHistory,
+    ];
 
-    const reply = response.choices[0]?.message?.content || "No response";
+    console.log(`Using model: ${conversationModel}`);
+    let reply: string;
+    
+    try {
+      reply = await getModelResponse(conversationModel, messagesToSend);
+      console.log(`Response received from ${conversationModel}`);
+    } catch (modelError) {
+      console.error(`Error calling ${conversationModel}:`, modelError);
+      return res.status(500).json({ 
+        error: `Failed to get response from ${SUPPORTED_MODELS[conversationModel as keyof typeof SUPPORTED_MODELS]}`,
+        details: modelError instanceof Error ? modelError.message : 'Unknown error'
+      });
+    }
 
     conversationHistory.push({ role: "assistant", content: reply });
 
@@ -177,12 +349,16 @@ app.post("/api/chat", optionalAuth, async (req, res) => {
     res.json({
       reply,
       conversationId: newConversationId,
+      model: conversationModel,
       isGuest,
       message: isGuest ? "Conversations are not saved for guest users. Log in to save your chats!" : undefined
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Unknown error occurred" });
+    console.error('Chat endpoint error:', err);
+    res.status(500).json({ 
+      error: "Unknown error occurred",
+      details: err instanceof Error ? err.message : 'Unknown error'
+    });
   }
 });
 

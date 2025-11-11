@@ -2,9 +2,11 @@
   "name": "chat-service",
   "version": "1.0.0",
   "dependencies": {
+    "highlight.js": "^11.11.1",
     "openai": "^5.20.1"
   },
   "devDependencies": {
+    "@types/highlight.js": "^9.12.4",
     "@vercel/node": "^3.0.0"
   }
 }

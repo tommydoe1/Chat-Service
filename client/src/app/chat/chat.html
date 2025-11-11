@@ -167,6 +167,53 @@
 <main class="h-screen flex items-start justify-center bg-background p-4 font-body">
   <div class="w-full max-w-4xl h-[85vh] bg-primary rounded-md shadow-md p-4 flex flex-col gap-4">
 
+    <!-- Model Selector-->
+    <div class="flex flex-col gap-2">
+      <div *ngIf="!currentConversationId" class="flex items-center gap-3">
+        <label class="text-secondary font-semibold">Model:</label>
+        
+        <div class="relative">
+          <button
+            (click)="toggleDropdown()"
+            class="w-full flex justify-between items-center px-4 py-2 rounded-md border border-background bg-secondary text-accent font-semibold focus:outline-none focus:ring-2 focus:ring-background"
+          >
+            <span class="text-center w-full">{{ availableModels[currentModel].name || 'Select model' }}</span>
+            <svg
+              class="w-4 h-4 transition-transform duration-200"
+              [ngClass]="{ 'rotate-180': dropdownOpen }"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          <div
+            *ngIf="dropdownOpen"
+            class="absolute z-10 mt-2 w-64 rounded-xl border border-background bg-background/70 backdrop-blur-md shadow-lg overflow-hidden animate-fadeIn"
+          >
+            <div
+              *ngFor="let model of availableModels | keyvalue"
+              (click)="selectModel(model.key)"
+              class="p-3 cursor-pointer transition bg-secondary hover:bg-background/30"
+            >
+              <div class="font-semibold text-accent">{{ model.value.name }}</div>
+              <div class="text-xs text-primary mt-1">
+                {{ model.value.description }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Current model indicator for existing conversations -->
+      <div *ngIf="currentConversationId" class="text-secondary text-sm">
+        Using: <span class="font-semibold">{{ availableModels[currentModel].name || currentModel }}</span>
+      </div>
+    </div>
+
     <!-- Guest Warning -->
     <div *ngIf="guestWarning" class="bg-orange-100 border border-orange-400 text-orange-700 px-4 py-2 rounded text-sm">
       {{ guestWarning }}
