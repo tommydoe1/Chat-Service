@@ -9,7 +9,6 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Title } from '@angular/platform-browser';
-import hljs from 'highlight.js';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
