@@ -169,7 +169,7 @@
 
     <!-- Model Selector-->
     <div class="flex flex-col gap-2">
-      <div *ngIf="!currentConversationId" class="flex items-center gap-3">
+      <div *ngIf="!modelLocked" class="flex items-center gap-3">
         <label class="text-secondary font-semibold">Model:</label>
         
         <div class="relative">
@@ -209,7 +209,7 @@
       </div>
 
       <!-- Current model indicator for existing conversations -->
-      <div *ngIf="currentConversationId" class="text-secondary text-sm">
+      <div *ngIf="modelLocked" class="text-secondary text-sm">
         Using: <span class="font-semibold">{{ availableModels[currentModel].name || currentModel }}</span>
       </div>
     </div>
@@ -227,9 +227,9 @@
       <div
         *ngFor="let msg of messages; let i = index"
         [ngClass]="msg.role === 'user' ? 'self-start bg-primary text-background' : 'self-end bg-secondary text-accent'"
-        class="px-3 py-2 rounded-lg max-w-xs message-content"
+        class="px-3 py-2 rounded-lg message-bubble message-content"
       >
-        <div *ngIf="msg.isHtml" [innerHTML]="msg.content"></div>
+        <div *ngIf="msg.isHtml" [innerHTML]="msg.content" class="rendered-markdown"></div>
         <div *ngIf="!msg.isHtml">{{ msg.content }}</div>
       </div>
 

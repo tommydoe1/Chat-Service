@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef, OnInit, OnDestroy } from '@angular/core';
+import { Component, ViewChild, ElementRef, OnInit, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ChatService } from '../services/chat.service';
@@ -21,7 +21,8 @@ interface ChatMessage {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './chat.html',
-  styleUrl: './chat.css'
+  styleUrl: './chat.css',
+  encapsulation: ViewEncapsulation.None
 })
 export class ChatComponent implements OnInit, OnDestroy {
   messages: ChatMessage[] = [];
@@ -31,6 +32,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   currentConversationId: number | undefined;
   currentModel: string = 'gpt-4o-mini';
   dropdownOpen = false;
+  modelLocked = false;
   availableModels: Record<
   string,
   { name: string; description: string }
@@ -61,7 +63,12 @@ export class ChatComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private titleService: Title
-  ) {}
+  ) {
+    marked.setOptions({
+      breaks: true,
+      gfm: true
+    });
+  }
 
   ngOnInit() {
 
@@ -74,6 +81,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         this.currentConversationId = undefined;
         this.titleService.setTitle('New Chat – AI Chat Service');
         this.currentModel = 'gpt-4o-mini';
+        this.modelLocked = false;
       }
     });
 
@@ -92,12 +100,16 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   toggleDropdown() {
-  this.dropdownOpen = !this.dropdownOpen;
+    if (!this.modelLocked) {
+      this.dropdownOpen = !this.dropdownOpen;
+    }
   }
 
   selectModel(key: string) {
-    this.currentModel = key;
-    this.dropdownOpen = false;
+    if (!this.modelLocked) {
+      this.currentModel = key;
+      this.dropdownOpen = false;
+    }
   }
 
   get isGuest(): boolean {
@@ -109,6 +121,7 @@ export class ChatComponent implements OnInit, OnDestroy {
       next: (conversation) => {
         this.currentConversationId = conversation.id;
         this.currentModel = (conversation as any).model || 'gpt-4o-mini';
+        this.modelLocked = true;
         this.messages = conversation.messages?.map(msg => ({
           role: msg.role as 'user' | 'assistant',
           content: msg.role === 'assistant' 
@@ -117,7 +130,10 @@ export class ChatComponent implements OnInit, OnDestroy {
           isHtml: msg.role === 'assistant'
         })) || [];
         this.titleService.setTitle(`${conversation.title || 'Chat'} – AI Chat Service`);
-        setTimeout(() => this.scrollToBottom(), 100);
+        setTimeout(() => {
+          this.scrollToBottom();
+          this.addCopyButtons();
+        }, 100);
       },
       error: (err) => {
         console.error('Error loading conversation:', err);
@@ -176,6 +192,10 @@ export class ChatComponent implements OnInit, OnDestroy {
       this.loading = true;
       this.guestWarning = null;
 
+      if (this.messages.length === 1) {
+        this.modelLocked = true;
+      }
+
       this.chatService.sendMessage(messageToSend, this.currentConversationId, this.currentModel).subscribe({
         next: (response) => {
           const rawHtml = marked.parse(response.reply) as string;
@@ -186,6 +206,8 @@ export class ChatComponent implements OnInit, OnDestroy {
             content: safeHtml,
             isHtml: true
           });
+
+          setTimeout(() => this.addCopyButtons(), 100);
           
           if (response.conversationId && !this.currentConversationId) {
             this.currentConversationId = response.conversationId;
@@ -221,5 +243,59 @@ export class ChatComponent implements OnInit, OnDestroy {
         }
       });
     }
+  }
+
+  private addCopyButtons() {
+    const codeBlocks = this.chatContainer.nativeElement.querySelectorAll('pre:not(.has-copy-button)');
+    
+    codeBlocks.forEach((pre: HTMLElement) => {
+      pre.classList.add('has-copy-button');
+      const codeElement = pre.querySelector('code');
+      
+      if (codeElement) {
+        if (typeof (window as any).hljs !== 'undefined') {
+          const hljs = (window as any).hljs;
+          try {
+            hljs.highlightElement(codeElement);
+          } catch (err) {
+            console.error('Syntax highlighting error:', err);
+          }
+        }
+        const button = document.createElement('button');
+        button.className = 'copy-button';
+        button.innerHTML = `
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          <span>Copy</span>
+        `;
+        
+        button.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          this.copyCode(codeElement, button);
+        };
+        
+        pre.appendChild(button);
+      }
+    });
+  }
+
+  private copyCode(codeBlock: HTMLElement, button: HTMLElement) {
+    const code = codeBlock.textContent || '';
+    navigator.clipboard.writeText(code).then(() => {
+      const span = button.querySelector('span');
+      if (span) {
+        span.textContent = 'Copied!';
+        button.style.backgroundColor = '#4CAF50';
+        setTimeout(() => {
+          span.textContent = 'Copy';
+          button.style.backgroundColor = '';
+        }, 2000);
+      }
+    }).catch(err => {
+      console.error('Failed to copy:', err);
+    });
   }
 }
