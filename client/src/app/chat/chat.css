@@ -25,3 +25,229 @@
     background-color: rgba(20, 20, 20, 0.6);
   }
 }
+
+app-chat .message-content {
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
+  max-width: 100%;
+}
+
+app-chat .message-bubble {
+  max-width: 70% !important;
+}
+
+@media (max-width: 768px) {
+  app-chat .message-bubble {
+    max-width: 85% !important;
+  }
+}
+
+app-chat .message-content * {
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+}
+
+app-chat .message-content pre,
+app-chat .rendered-markdown pre {
+  background-color: #1e1e1e !important;
+  border-radius: 8px !important;
+  margin: 0.75rem 0 !important;
+  position: relative !important;
+  border: 1px solid rgba(0, 0, 0, 0.2) !important;
+  padding: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+app-chat .copy-button {
+  position: absolute !important;
+  top: 0.5rem !important;
+  right: 0.5rem !important;
+  padding: 0.35rem 0.65rem !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: #d4d4d4 !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 6px !important;
+  font-size: 0.75rem !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+  z-index: 10 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.3rem !important;
+  font-family: system-ui, -apple-system, sans-serif !important;
+}
+
+app-chat .copy-button svg {
+  width: 14px !important;
+  height: 14px !important;
+  flex-shrink: 0 !important;
+}
+
+app-chat .copy-button:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+app-chat .copy-button:active {
+  transform: scale(0.95) !important;
+}
+
+app-chat .message-content pre code,
+app-chat .rendered-markdown pre code {
+  display: block !important;
+  padding: 2.5rem 1rem 1rem 1rem !important;
+  color: #d4d4d4 !important;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+  font-size: 0.875em !important;
+  line-height: 1.5 !important;
+  overflow-x: auto !important;
+  background-color: transparent !important;
+  white-space: pre !important;
+  word-wrap: normal !important;
+  box-sizing: border-box !important;
+}
+
+app-chat pre code .hljs-comment,
+app-chat pre code .hljs-quote {
+  color: #6a9955 !important;
+  font-style: italic !important;
+}
+
+app-chat pre code .hljs-keyword,
+app-chat pre code .hljs-selector-tag,
+app-chat pre code .hljs-literal,
+app-chat pre code .hljs-section,
+app-chat pre code .hljs-link {
+  color: #569cd6 !important;
+}
+
+app-chat pre code .hljs-string {
+  color: #ce9178 !important;
+}
+
+app-chat pre code .hljs-number {
+  color: #b5cea8 !important;
+}
+
+app-chat pre code .hljs-function,
+app-chat pre code .hljs-title,
+app-chat pre code .hljs-section {
+  color: #dcdcaa !important;
+}
+
+app-chat pre code .hljs-class,
+app-chat pre code .hljs-type,
+app-chat pre code .hljs-built_in {
+  color: #4ec9b0 !important;
+}
+
+app-chat pre code .hljs-variable,
+app-chat pre code .hljs-attr {
+  color: #9cdcfe !important;
+}
+
+app-chat pre code .hljs-operator,
+app-chat pre code .hljs-keyword.hljs-operator {
+  color: #d4d4d4 !important;
+}
+
+app-chat pre code .hljs-meta,
+app-chat pre code .hljs-meta-keyword {
+  color: #c586c0 !important;
+}
+
+app-chat pre code .hljs-tag,
+app-chat pre code .hljs-name {
+  color: #569cd6 !important;
+}
+
+app-chat pre code .hljs-params,
+app-chat pre code .hljs-constant {
+  color: #4fc1ff !important;
+}
+
+app-chat pre code .hljs-regexp {
+  color: #d16969 !important;
+}
+
+app-chat pre code .hljs-symbol,
+app-chat pre code .hljs-bullet {
+  color: #4ec9b0 !important;
+}
+
+app-chat pre code .hljs-emphasis {
+  font-style: italic !important;
+}
+
+app-chat pre code .hljs-strong {
+  font-weight: bold !important;
+}
+
+app-chat .message-content :not(pre) > code,
+app-chat .rendered-markdown :not(pre) > code {
+  background-color: rgba(175, 184, 193, 0.2) !important;
+  padding: 0.2em 0.4em !important;
+  border-radius: 4px !important;
+  font-size: 0.875em !important;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+  color: #e01e5a !important;
+  word-break: break-word !important;
+}
+
+app-chat .message-content p,
+app-chat .rendered-markdown p {
+  margin: 0.5rem 0 !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+}
+
+app-chat .message-content p:first-child,
+app-chat .rendered-markdown p:first-child {
+  margin-top: 0 !important;
+}
+
+app-chat .message-content p:last-child,
+app-chat .rendered-markdown p:last-child {
+  margin-bottom: 0 !important;
+}
+
+app-chat .message-content ul,
+app-chat .message-content ol,
+app-chat .rendered-markdown ul,
+app-chat .rendered-markdown ol {
+  padding-left: 1.5rem !important;
+  margin: 0.5rem 0 !important;
+}
+
+app-chat .message-content li,
+app-chat .rendered-markdown li {
+  margin: 0.25rem 0 !important;
+}
+
+app-chat .message-content a,
+app-chat .rendered-markdown a {
+  color: #0969da !important;
+  text-decoration: underline !important;
+  word-break: break-word !important;
+}
+
+app-chat .message-content h1,
+app-chat .message-content h2,
+app-chat .message-content h3,
+app-chat .rendered-markdown h1,
+app-chat .rendered-markdown h2,
+app-chat .rendered-markdown h3 {
+  margin: 1rem 0 0.5rem 0 !important;
+  font-weight: 600 !important;
+}
+
+app-chat .message-content blockquote,
+app-chat .rendered-markdown blockquote {
+  border-left: 3px solid rgba(0, 0, 0, 0.2) !important;
+  padding-left: 1rem !important;
+  margin: 0.75rem 0 !important;
+  opacity: 0.8 !important;
+}

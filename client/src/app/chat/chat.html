@@ -227,9 +227,9 @@
       <div
         *ngFor="let msg of messages; let i = index"
         [ngClass]="msg.role === 'user' ? 'self-start bg-primary text-background' : 'self-end bg-secondary text-accent'"
-        class="px-3 py-2 rounded-lg max-w-xs message-content"
+        class="px-3 py-2 rounded-lg message-bubble message-content"
       >
-        <div *ngIf="msg.isHtml" [innerHTML]="msg.content"></div>
+        <div *ngIf="msg.isHtml" [innerHTML]="msg.content" class="rendered-markdown"></div>
         <div *ngIf="!msg.isHtml">{{ msg.content }}</div>
       </div>
 
