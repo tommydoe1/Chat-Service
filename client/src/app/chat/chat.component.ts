@@ -31,6 +31,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   currentConversationId: number | undefined;
   currentModel: string = 'gpt-4o-mini';
   dropdownOpen = false;
+  modelLocked = false;
   availableModels: Record<
   string,
   { name: string; description: string }
@@ -74,6 +75,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         this.currentConversationId = undefined;
         this.titleService.setTitle('New Chat – AI Chat Service');
         this.currentModel = 'gpt-4o-mini';
+        this.modelLocked = false;
       }
     });
 
@@ -92,12 +94,16 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   toggleDropdown() {
-  this.dropdownOpen = !this.dropdownOpen;
+    if (!this.modelLocked) {
+      this.dropdownOpen = !this.dropdownOpen;
+    }
   }
 
   selectModel(key: string) {
-    this.currentModel = key;
-    this.dropdownOpen = false;
+    if (!this.modelLocked) {
+      this.currentModel = key;
+      this.dropdownOpen = false;
+    }
   }
 
   get isGuest(): boolean {
@@ -109,6 +115,7 @@ export class ChatComponent implements OnInit, OnDestroy {
       next: (conversation) => {
         this.currentConversationId = conversation.id;
         this.currentModel = (conversation as any).model || 'gpt-4o-mini';
+        this.modelLocked = true;
         this.messages = conversation.messages?.map(msg => ({
           role: msg.role as 'user' | 'assistant',
           content: msg.role === 'assistant' 
@@ -175,6 +182,10 @@ export class ChatComponent implements OnInit, OnDestroy {
       setTimeout(() => this.scrollToBottom(), 0);
       this.loading = true;
       this.guestWarning = null;
+
+      if (this.messages.length === 1) {
+        this.modelLocked = true;
+      }
 
       this.chatService.sendMessage(messageToSend, this.currentConversationId, this.currentModel).subscribe({
         next: (response) => {

@@ -169,7 +169,7 @@
 
     <!-- Model Selector-->
     <div class="flex flex-col gap-2">
-      <div *ngIf="!currentConversationId" class="flex items-center gap-3">
+      <div *ngIf="!modelLocked" class="flex items-center gap-3">
         <label class="text-secondary font-semibold">Model:</label>
         
         <div class="relative">
@@ -209,7 +209,7 @@
       </div>
 
       <!-- Current model indicator for existing conversations -->
-      <div *ngIf="currentConversationId" class="text-secondary text-sm">
+      <div *ngIf="modelLocked" class="text-secondary text-sm">
         Using: <span class="font-semibold">{{ availableModels[currentModel].name || currentModel }}</span>
       </div>
     </div>
