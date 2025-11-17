@@ -29,6 +29,12 @@
         >
           Logout
         </button>
+        <button
+          (click)="showDeleteConfirm()"
+          class="block w-full text-left px-4 py-2 hover:bg-background/40 text-red-600"
+        >
+          Delete Account
+        </button>
       </div>
     </ng-container>
 
@@ -48,4 +54,26 @@
     *ngIf="showAuthDialog"
     (close)="toggleAuthDialog()"
   ></app-auth-dialog>
+
+  <!-- Delete confirmation dialog -->
+  <div *ngIf="showDeleteDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[101]">
+    <div class="bg-secondary p-6 rounded-lg shadow-xl max-w-md">
+      <h2 class="text-xl font-bold mb-4 text-accent">Delete Account</h2>
+      <p class="mb-4 text-accent">Are you sure you want to delete your account? This action cannot be undone and will delete all your conversations.</p>
+      <div class="flex gap-2 justify-end">
+        <button
+          (click)="cancelDelete()"
+          class="px-4 py-2 rounded bg-primary hover:bg-primary/80"
+        >
+          Cancel
+        </button>
+        <button
+          (click)="confirmDelete()"
+          class="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
 </header>

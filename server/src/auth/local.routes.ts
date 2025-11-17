@@ -2,6 +2,7 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
+import { authenticateJWT } from '../middleware/auth.middleware.js';
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -81,6 +82,38 @@ router.get('/me', async (req, res) => {
   } catch (err) {
     console.error('Error in /me endpoint:', err);
     res.status(401).json({ error: 'Invalid token' });
+  }
+});
+
+router.delete('/account', authenticateJWT, async (req, res) => {
+  try {
+    const userId = (req as any).user.id;
+
+    const conversations = await prisma.conversation.findMany({
+      where: { userId },
+      select: { id: true }
+    });
+
+    const conversationIds = conversations.map(c => c.id);
+
+    if (conversationIds.length > 0) {
+      await prisma.message.deleteMany({
+        where: { conversationId: { in: conversationIds } }
+      });
+
+      await prisma.conversation.deleteMany({
+        where: { userId }
+      });
+    }
+
+    await prisma.user.delete({
+      where: { id: userId }
+    });
+
+    res.json({ success: true, message: 'Account deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting account:', err);
+    res.status(500).json({ error: 'Failed to delete account', details: err instanceof Error ? err.message : err });
   }
 });
 
