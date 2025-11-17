@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { ConversationService } from '../services/conversation.service';
 
@@ -25,6 +25,7 @@ export class Sidebar implements OnInit {
   constructor(
     private conversationService: ConversationService,
     private authService: AuthService,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -42,6 +43,12 @@ export class Sidebar implements OnInit {
         this.conversations = [];
       }
     });
+
+    this.conversationService.conversationUpdated$.subscribe(() => {
+      if (this.isAuthenticated) {
+        this.loadConversations();
+      }
+    });
   }
 
   loadConversations() {
@@ -53,5 +60,24 @@ export class Sidebar implements OnInit {
         console.error('Error loading conversations:', err);
       }
     });
+  }
+
+  deleteConversation(id: number, event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (confirm('Are you sure you want to delete this conversation?')) {
+      this.conversationService.deleteConversation(id).subscribe({
+        next: () => {
+          if (this.router.url === `/chat/${id}`) {
+            this.router.navigate(['/']);
+          }
+        },
+        error: (err) => {
+          console.error('Error deleting conversation:', err);
+          alert('Failed to delete conversation');
+        }
+      });
+    }
   }
 }

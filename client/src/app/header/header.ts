@@ -28,6 +28,7 @@ export class Header {
   logout() {
     this.authService.logout();
     this.showDropdown = false;
+    this.router.navigate(['/']);
   }
 
   onToggleClick() {
