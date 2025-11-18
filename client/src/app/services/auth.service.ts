@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../environments/environment';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 
@@ -7,7 +7,7 @@ import { BehaviorSubject, Observable, tap } from 'rxjs';
 export class AuthService {
   private apiUrl = environment.apiUrl;
 
-  private userSubject = new BehaviorSubject<any>(null);
+  public userSubject = new BehaviorSubject<any>(null);
   user$ = this.userSubject.asObservable();
 
   constructor(private http: HttpClient) {
@@ -16,6 +16,13 @@ export class AuthService {
     if (token && savedUser) {
       this.userSubject.next(JSON.parse(savedUser));
     }
+  }
+
+  private getHeaders(): HttpHeaders {
+    const token = this.getToken();
+    return token 
+      ? new HttpHeaders({ 'Authorization': `Bearer ${token}` })
+      : new HttpHeaders();
   }
 
   register(data: { username: string; email: string; password: string }): Observable<any> {
@@ -32,6 +39,12 @@ export class AuthService {
 
   googleLogin(): void {
     window.location.href = `${this.apiUrl}/api/auth/google`;
+  }
+
+  deleteAccount(): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/api/auth/account`, {
+      headers: this.getHeaders()
+    });
   }
 
   private handleAuth(res: any): void {

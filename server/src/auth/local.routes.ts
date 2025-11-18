@@ -2,6 +2,7 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
+import { authenticateJWT } from '../middleware/auth.middleware.js';
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -42,6 +43,77 @@ router.post('/login', async (req, res) => {
     res.json({ token, user });
   } catch (err) {
     res.status(500).json({ error: 'Login failed', details: err instanceof Error ? err.message : err });
+  }
+});
+
+router.get('/me', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    
+    if (!token) {
+      return res.status(401).json({ error: 'Malformed token' });
+    }
+
+    if (!process.env.JWT_SECRET) {
+      return res.status(500).json({ error: 'Server configuration error' });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET) as { id: number };
+    
+    if (!decoded || typeof decoded.id !== 'number') {
+      return res.status(401).json({ error: 'Invalid token payload' });
+    }
+    
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
+      select: { id: true, email: true, username: true }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json(user);
+  } catch (err) {
+    console.error('Error in /me endpoint:', err);
+    res.status(401).json({ error: 'Invalid token' });
+  }
+});
+
+router.delete('/account', authenticateJWT, async (req, res) => {
+  try {
+    const userId = (req as any).user.id;
+
+    const conversations = await prisma.conversation.findMany({
+      where: { userId },
+      select: { id: true }
+    });
+
+    const conversationIds = conversations.map(c => c.id);
+
+    if (conversationIds.length > 0) {
+      await prisma.message.deleteMany({
+        where: { conversationId: { in: conversationIds } }
+      });
+
+      await prisma.conversation.deleteMany({
+        where: { userId }
+      });
+    }
+
+    await prisma.user.delete({
+      where: { id: userId }
+    });
+
+    res.json({ success: true, message: 'Account deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting account:', err);
+    res.status(500).json({ error: 'Failed to delete account', details: err instanceof Error ? err.message : err });
   }
 });
 

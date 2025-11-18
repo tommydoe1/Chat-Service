@@ -20,15 +20,26 @@
           No saved chats yet
         </div>
         
-        <a 
+        <div 
           *ngFor="let conv of conversations"
-          [routerLink]="['/chat', conv.id]"
-          routerLinkActive="bg-secondary"
-          class="hover:bg-secondary px-3 py-2 rounded text-sm truncate"
-          [title]="conv.title"
+          class="group flex items-center hover:bg-secondary rounded"
         >
-          {{ conv.title || 'Untitled Chat' }}
-        </a>
+          <a 
+            [routerLink]="['/chat', conv.id]"
+            routerLinkActive="bg-secondary"
+            class="flex-1 px-3 py-2 text-sm truncate"
+            [title]="conv.title"
+          >
+            {{ conv.title || 'Untitled Chat' }}
+          </a>
+          <button
+            (click)="deleteConversation(conv.id, $event)"
+            class="opacity-0 group-hover:opacity-100 px-2 py-1 text-red-600 hover:text-red-800 transition-opacity"
+            title="Delete conversation"
+          >
+            ✕
+          </button>
+        </div>
       </ng-container>
       
       <ng-template #guestMessage>
